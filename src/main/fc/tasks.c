@@ -158,6 +158,20 @@ static void taskBatteryAlerts(timeUs_t currentTimeUs)
     batteryUpdateAlarms();
 }
 
+#define GREEN_LED_Pin GPIO_PIN_0
+#define GREEN_LED_GPIO_Port GPIOB
+#define RED_LED_Pin GPIO_PIN_14
+#define RED_LED_GPIO_Port GPIOB
+#define BLUE_LED_Pin GPIO_PIN_7
+#define BLUE_LED_GPIO_Port GPIOB
+
+static void led_blink(timeUs_t currentTimeUs)
+{
+    // HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
+    // HAL_GPIO_TogglePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin);
+    HAL_GPIO_TogglePin(RED_LED_GPIO_Port, RED_LED_Pin);
+}
+
 #ifdef USE_ACC
 static void taskUpdateAccelerometer(timeUs_t currentTimeUs)
 {
@@ -328,6 +342,7 @@ task_attribute_t task_attributes[TASK_COUNT] = {
     [TASK_BATTERY_ALERTS] = DEFINE_TASK("BATTERY_ALERTS", NULL, NULL, taskBatteryAlerts, TASK_PERIOD_HZ(5), TASK_PRIORITY_MEDIUM),
     [TASK_BATTERY_VOLTAGE] = DEFINE_TASK("BATTERY_VOLTAGE", NULL, NULL, batteryUpdateVoltage, TASK_PERIOD_HZ(SLOW_VOLTAGE_TASK_FREQ_HZ), TASK_PRIORITY_MEDIUM), // Freq may be updated in tasksInit
     [TASK_BATTERY_CURRENT] = DEFINE_TASK("BATTERY_CURRENT", NULL, NULL, batteryUpdateCurrentMeter, TASK_PERIOD_HZ(50), TASK_PRIORITY_MEDIUM),
+    [TASK_LED_BLINK] = DEFINE_TASK("LED_BLINK", NULL, NULL, led_blink, TASK_PERIOD_HZ(4), TASK_PRIORITY_HIGH),
 
 #ifdef USE_TRANSPONDER
     [TASK_TRANSPONDER] = DEFINE_TASK("TRANSPONDER", NULL, NULL, transponderUpdate, TASK_PERIOD_HZ(250), TASK_PRIORITY_LOW),
@@ -444,6 +459,7 @@ void tasksInit(void)
 
     const bool useBatteryVoltage = batteryConfig()->voltageMeterSource != VOLTAGE_METER_NONE;
     setTaskEnabled(TASK_BATTERY_VOLTAGE, useBatteryVoltage);
+    setTaskEnabled(TASK_LED_BLINK, true);
 
 #if defined(USE_BATTERY_VOLTAGE_SAG_COMPENSATION)
     // If vbat motor output compensation is used, use fast vbat samplingTime
